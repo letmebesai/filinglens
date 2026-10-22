@@ -1,4 +1,4 @@
-"""Download raw SEC data for a list of tickers into the bronze folder."""
+﻿"""Download raw SEC data for a list of tickers into the bronze folder."""
 
 from __future__ import annotations
 
@@ -18,8 +18,8 @@ TICKERS_URL = f"{WWW_BASE}/files/company_tickers.json"
 
 # One folder per kind of data under data/bronze/.
 SOURCES = {
-    "submissions": DATA_BASE + "/submissions/CIK{cik:010d}.json",
-    "companyfacts": DATA_BASE + "/api/xbrl/companyfacts/CIK{cik:010d}.json",
+    "submissions": DATA_BASE + "/submissions/CIK{cik}.json",
+    "companyfacts": DATA_BASE + "/api/xbrl/companyfacts/CIK{cik}.json",
 }
 
 
@@ -71,7 +71,7 @@ def run_ingest(
     found, report.missing_tickers = resolve(tickers, cik_map)
 
     for ticker, cik in found.items():
-        name = f"CIK{cik:010d}"
+        name = f"CIK{cik}"
         for kind, template in SOURCES.items():
             label = f"{ticker}/{kind}"
             directory = bronze_dir / kind
@@ -88,3 +88,4 @@ def run_ingest(
             report.fetched.append(label)
             log.info("fetched %s", label)
     return report
+
