@@ -30,3 +30,15 @@ def resolve(tickers: Iterable[str], cik_map: dict[str, str]) -> tuple[dict[str, 
         else:
             missing.append(ticker)
     return found, missing
+
+from pathlib import Path
+
+
+def read_tickers(path: Path) -> list[str]:
+    """Read tickers from a file: one per line, blanks and # comments ignored."""
+    tickers: list[str] = []
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        text = line.split("#", 1)[0].strip()
+        if text:
+            tickers.append(text.upper())
+    return tickers
