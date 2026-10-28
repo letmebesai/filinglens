@@ -1,4 +1,4 @@
-﻿"""Raw table definitions for the DuckDB warehouse.
+"""Raw table definitions for the DuckDB warehouse.
 
 Every raw table carries provenance columns so any row can be traced back
 to the bronze file and SEC URL it came from.
@@ -28,16 +28,20 @@ CREATE TABLE IF NOT EXISTS raw_filings (
 );
 
 CREATE TABLE IF NOT EXISTS raw_facts (
-    cik            VARCHAR NOT NULL,
-    taxonomy       VARCHAR NOT NULL,
-    concept        VARCHAR NOT NULL,
-    unit           VARCHAR NOT NULL,
-    period_end     DATE,
-    value          DOUBLE,
+    cik              VARCHAR NOT NULL,
+    taxonomy         VARCHAR NOT NULL,
+    concept          VARCHAR NOT NULL,
+    unit             VARCHAR NOT NULL,
+    period_start     DATE,
+    period_end       DATE,
+    value            DOUBLE,
     accession_number VARCHAR,
-    filed_date     DATE,
-    source_url     VARCHAR NOT NULL,
-    retrieved_at   TIMESTAMP NOT NULL,
-    sha256         VARCHAR NOT NULL
+    fiscal_year      INTEGER,
+    fiscal_period    VARCHAR,
+    form             VARCHAR,
+    filed_date       DATE,
+    source_url       VARCHAR NOT NULL,
+    retrieved_at     TIMESTAMP NOT NULL,
+    sha256           VARCHAR NOT NULL
 );
 """
