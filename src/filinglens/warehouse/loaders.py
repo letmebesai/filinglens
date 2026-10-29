@@ -57,8 +57,9 @@ def _rows_from_companyfacts(payload: dict, source_url: str, retrieved_at: str, s
 def load_companyfacts(con: duckdb.DuckDBPyConnection, path: Path, source_url: str, retrieved_at: str, sha256: str) -> int:
     """Replace one company's raw_facts rows from a bronze file. Returns rows inserted.
 
-    The delete and the bulk COPY run in one transaction, so a failed load
-    leaves the previous rows for that CIK untouched and reloads never double-count.
+    The delete, the bulk COPY and a row-count check run in one transaction, so a
+    failed or short load leaves the previous rows for that CIK untouched and
+    reloads never double-count.
     """
     payload = json.loads(path.read_text(encoding="utf-8"))
     cik = str(payload["cik"]).zfill(10)
@@ -75,7 +76,12 @@ def load_companyfacts(con: duckdb.DuckDBPyConnection, path: Path, source_url: st
         try:
             con.execute("DELETE FROM raw_facts WHERE cik = ?", [cik])
             if count:
-                con.execute(f"COPY raw_facts ({cols}) FROM '{tmp.replace(chr(92), '/')}' (FORMAT csv)")
+                con.execute(
+                    f"COPY raw_facts ({cols}) FROM '{tmp.replace(chr(92), '/')}' (FORMAT csv, HEADER false)"
+                )
+            loaded = con.execute("SELECT count(*) FROM raw_facts WHERE cik = ?", [cik]).fetchone()[0]
+            if loaded != count:
+                raise RuntimeError(f"raw_facts row count mismatch for {cik}: wrote {count}, table has {loaded}")
             con.execute("COMMIT")
         except Exception:
             con.execute("ROLLBACK")

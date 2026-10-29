@@ -115,3 +115,24 @@ def test_reload_replaces_only_that_cik(tmp_path):
     assert shas["0000320193"] == "abc2"
     assert shas["0000789019"] == "def"
     con.close()
+
+def test_table_count_equals_returned_count_on_larger_payload(tmp_path):
+    facts = [
+        {
+            "start": f"2010-{(i % 12) + 1:02d}-01",
+            "end": f"2010-{(i % 12) + 1:02d}-28",
+            "val": 1000 + i,
+            "accn": f"0000000000-11-{i:06d}",
+            "fy": 2011,
+            "fp": "Q1",
+            "form": "10-Q",
+            "filed": "2011-02-01",
+        }
+        for i in range(300)
+    ]
+    payload = {"cik": 320193, "facts": {"us-gaap": {"Revenues": {"units": {"USD": facts}}}}}
+    con = connect(tmp_path / "wh.duckdb")
+    n = load_companyfacts(con, _write(tmp_path, payload), URL, RETRIEVED, "abc")
+    assert n == 300
+    assert con.execute("SELECT count(*) FROM raw_facts").fetchone()[0] == n
+    con.close()
